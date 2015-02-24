@@ -1,47 +1,81 @@
+#include <unistd.h>
+#include <string.h>
 #include <error.h>
 #include <errno.h>
-#include <arpa/inet.h>
 #include <netdb.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
 #include <stdio.h>
 
-struct in_addr resolve(char *name) {
-	struct in_addr in;
-	unsigned long l;
-	struct hostent *ent;
-	if ((l = inet_addr(name)) != INADDR_NONE) {
-		//IP address
-		in.s_addr = l;
-		return in;
+#define EASYGET "GET / HTTP/1.1\r\n" \
+	"Connection: close\r\n" \
+	"Host: www.google.fr\r\n\r\n"
+
+int getTcpClient(char *host, char *service) {
+	int sock=-1, e;
+	const struct addrinfo hints = {0, AF_UNSPEC, SOCK_STREAM,
+		0, 0, NULL, NULL, NULL};
+	struct addrinfo *res=NULL, *p;
+	if (e = getaddrinfo(host, service, &hints, &res))
+		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(e));
+	for (p=res; p; p=p->ai_next) {
+		char ip[40];
+		int h = getnameinfo(p->ai_addr, p->ai_addrlen, ip, sizeof(ip),
+				NULL, 0, NI_NUMERICHOST);
+		if (h) {
+			fprintf(stderr, "getnameinfo: %s\n", gai_strerror(h));
+			*ip = 0; //not fatal
+		}
+		if ((sock=socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
+			perror("socket");
+			continue;
+		}
+		fprintf(stderr, "trying %s... ", *ip ? ip : "(?)");
+		if (connect(sock, p->ai_addr, p->ai_addrlen) == -1) {
+			perror("connect");
+			close(sock);
+			sock = -1;
+		}
+		else
+			break;
 	}
-	else if (! (ent=gethostbyname(name))) {
-		//unknown host
-		in.s_addr = INADDR_NONE;
-		return in;
+	if (sock == -1)
+		fprintf(stderr, "couldn't connect to %s\n", host);
+	else {
+		fprintf(stderr, "connected\n");
+		freeaddrinfo(res);
 	}
-	else
-		//resolved DNS (we got an IP)
-		return *(struct in_addr*)ent->h_addr;
+	return sock;
 }
 
 int main(int argc, char *argv[]) {
-	if (argc == 2) {
-		int sock = socket(AF_INET, SOCK_STREAM, 0);
-		struct in_addr ip = resolve(argv[1]);
-		struct sockaddr_in target = {AF_INET, htons(1111), ip, 0};
-		printf("IP: %s\n", inet_ntoa(ip));
-		if (sock == -1)
-			error(errno, errno, "socket");
-		else {
-			if (connect(sock, (struct sockaddr*)&target, sizeof(target)) == -1)
-				error(errno, errno, "connect");
-			printf("connected\n");
-			if (send(sock, "pouet\n", 6, 0) == -1)
-				error(errno, errno, "send");
-			shutdown(sock, SHUT_RDWR);
+	char *prot="http";
+	int o, verbose=0;
+	while ((o=getopt(argc, argv, "p:v")) != -1) {
+		switch (o) {
+			case 'p':
+				prot = optarg;
+				break;
+			case 'v':
+				verbose++;
+				//break;
 		}
+	}
+	if (argv[optind]) {
+		int sock;
+		ssize_t r;
+		char buf[1024];
+		if ((sock=getTcpClient(argv[optind], prot)) == -1)
+			return 1;
+		if (send(sock, EASYGET, strlen(EASYGET), 0) == -1)
+			error(errno, errno, "send");
+		while ((r = recv(sock, buf, sizeof(buf), 0))!=0 && r!=-1) {
+			buf[r] = 0;
+			puts(buf);
+		}
+		if (r == -1)
+			perror("recv");
+		close(sock);
 	}
 	else
 		printf("Usage: %s name\n", argv[0]);
