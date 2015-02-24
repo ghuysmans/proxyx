@@ -1,3 +1,5 @@
+#include <error.h>
+#include <errno.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <sys/types.h>
@@ -25,8 +27,22 @@ struct in_addr resolve(char *name) {
 }
 
 int main(int argc, char *argv[]) {
-	if (argc == 2)
-		printf("%s\n", inet_ntoa(resolve(argv[1])));
+	if (argc == 2) {
+		int sock = socket(AF_INET, SOCK_STREAM, 0);
+		struct in_addr ip = resolve(argv[1]);
+		struct sockaddr_in target = {AF_INET, htons(1111), ip, 0};
+		printf("IP: %s\n", inet_ntoa(ip));
+		if (sock == -1)
+			error(errno, errno, "socket");
+		else {
+			if (connect(sock, (struct sockaddr*)&target, sizeof(target)) == -1)
+				error(errno, errno, "connect");
+			printf("connected\n");
+			if (send(sock, "pouet\n", 6, 0) == -1)
+				error(errno, errno, "send");
+			shutdown(sock, SHUT_RDWR);
+		}
+	}
 	else
 		printf("Usage: %s name\n", argv[0]);
 	return 0;
