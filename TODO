@@ -1,0 +1,12 @@
+Build Configuration Script (autotools)?
+	https://www.lrde.epita.fr/~adl/dl/autotools.pdf
+Unit Tests integrated with autotools
+	python -m SimpleHTTPServer?
+	Add a dependency (only for tests) to Python
+	Create dependencies in the Makefile
+Doxygen
+	http://www.bioinf.uni-freiburg.de/~mmann/HowTo/automake.html#doxygenSupport
+Hashtable for headers? Existing lib?
+Scripted (Lua) Web interface
+	Define an API, document it, provide samples...
+Credits for libs
