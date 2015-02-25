@@ -1,1 +1,4 @@
 reso
+luatest
+lua-*/src/*.o
+lua-*/src/*.a
