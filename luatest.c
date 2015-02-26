@@ -1,13 +1,16 @@
+#include "config.h"
 #include <unistd.h>
 #include <string.h>
 #include <error.h>
 #include <stdio.h>
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
+#ifdef HAVE_LUA
+#include "lua.h"
+#include "lauxlib.h"
+#include "lualib.h"
+#endif //HAVE_LUA
 
 int main(int argc, char *argv[]) {
-	int o, verbose=0;
+	int o, verbose=0, e=0;
 	while ((o=getopt(argc, argv, "p:v")) != -1) {
 		switch (o) {
 			case 'v':
@@ -16,8 +19,8 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	if (argv[optind]) {
+#ifdef HAVE_LUA
 		lua_State *L = luaL_newstate();
-		int e;
 		luaL_openlibs(L);
 		lua_newtable(L);
 		lua_pushnumber(L, 0);
@@ -35,10 +38,12 @@ int main(int argc, char *argv[]) {
 			lua_pop(L, 1);
 		}
 		lua_close(L);
-		return e;
+#else
+		e = 1;
+		fprintf(stderr, "No Lua support!\n");
+#endif //HAVE_LUA
 	}
-	else {
+	else
 		printf("Usage: %s script\n", argv[0]);
-		return 0;
-	}
+	return e;
 }
