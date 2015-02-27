@@ -1,12 +1,35 @@
-Build Configuration Script (autotools)?
-	https://www.lrde.epita.fr/~adl/dl/autotools.pdf
-Unit Tests integrated with autotools
-	python -m SimpleHTTPServer?
-	Add a dependency (only for tests) to Python
-	Create dependencies in the Makefile
-Doxygen
-	http://www.bioinf.uni-freiburg.de/~mmann/HowTo/automake.html#doxygenSupport
-Hashtable for headers? Existing lib?
-Scripted (Lua) Web interface
-	Define an API, document it, provide samples...
-Credits for libs
+bulletproof, well-documented API: decide NOW!
+conventions:
+	0 means success
+	indent with tabs
+
+sockets:
+	avoid repetition (getaddrinfo, etc.)
+	comprehensive error messages (file, syscall)
+
+HTTP:
+	date:
+		conversion
+		comparison
+	headers data structure implementations:
+		singly linked list
+		hashtable:
+			http://troydhanson.github.io/uthash/
+			credits!
+
+CMake:
+	optional support for uthash (option)
+	unit tests:
+		dependencies:
+			curl/wget (it must be able to use an HTTP proxy)
+			python -m SimpleHTTPServer
+	Doxygen
+
+scripted Lua Web interface:
+	API:
+		settings
+		IO:
+			client via redirections
+			files? make it secure
+	ugly but usable samples (default)
+	credits for the interpreter!
