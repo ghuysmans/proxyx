@@ -2,6 +2,7 @@
 #binaries
 reso
 luatest
+md5test
 #CMake
 Makefile
 CMakeCache.txt

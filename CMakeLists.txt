@@ -12,6 +12,14 @@ if(LUA52_FOUND)
 	link_libraries(${LUA_LIBRARIES})
 endif(LUA52_FOUND)
 
+find_package(OpenSSL)
+if(OPENSSL_FOUND)
+	include_directories(${OPENSSL_INCLUDE_DIR})
+	link_libraries(${OPENSSL_LIBRARIES})
+else()
+	message(FATAL_ERROR "OpenSSL is required")
+endif(OPENSSL_FOUND)
+
 #config header
 get_directory_property(COMPILE_DEFINITIONS COMPILE_DEFINITIONS)
 configure_file("${PROJECT_SOURCE_DIR}/config.h.in"
@@ -19,3 +27,4 @@ configure_file("${PROJECT_SOURCE_DIR}/config.h.in"
 
 add_executable(luatest src/luatest.c)
 add_executable(reso src/reso.c)
+add_executable(md5test src/md5test.c)
