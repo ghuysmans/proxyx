@@ -1,6 +1,6 @@
 *.swp
 #binaries
-reso
+client
 luatest
 md5test
 #CMake

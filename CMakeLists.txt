@@ -25,6 +25,6 @@ get_directory_property(COMPILE_DEFINITIONS COMPILE_DEFINITIONS)
 configure_file("${PROJECT_SOURCE_DIR}/config.h.in"
 	"${PROJECT_BINARY_DIR}/config.h")
 
-add_executable(luatest src/luatest.c)
-add_executable(reso src/reso.c)
-add_executable(md5test src/md5test.c)
+add_executable(luatest poc/luatest.c)
+add_executable(client poc/client.c)
+add_executable(md5test poc/md5test.c)
