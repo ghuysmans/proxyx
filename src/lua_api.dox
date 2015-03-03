@@ -1,0 +1,114 @@
+/**
+ * @file
+ * Lua API
+ */
+
+/**
+ * Script entrypoint for the upload part
+ */
+void upload(ProxyUp data /**<context*/);
+
+/**
+ * Script entrypoint for the download part
+ */
+void download(ProxyDown data /**<context*/);
+
+/**
+ * Input of #upload()
+ *
+ * A cache search will be performed upon the script's exit
+ * unless No-Cache is specified in the headers.
+ */
+class ProxyxUp {
+public:
+	Request client; ///<request received from the client
+	/**
+	 * Request "sent" by the proxy
+	 * 
+	 * By default, #server is a copy of #client without
+	 * the cache-related headers.
+	 */
+	Request server;
+};
+
+/**
+ * Input of #download()
+ */
+class ProxyxDown {
+public:
+	Response server; ///<server response (maybe cached)
+	/**
+	 * Request sent to the client
+	 * 
+	 * By default, #server is a copy of #client without
+	 * the cache-related headers.
+	 */
+	Response client;
+};
+
+/**
+ * HTTP response
+ */
+class Response {
+public:
+	number status; ///<status code
+	table headers; ///<headers
+	table cookies; ///<client cookies FIXME expiration?
+	Data data; ///<data
+};
+
+/**
+ * HTTP request headers
+ */
+class Request {
+public:
+	string method; ///<method
+	string path; ///<path
+	table headers; ///<headers
+	table get; ///<GET parameters
+	table post; ///<POST parameters
+	table cookies; ///<client cookies
+	Data data; ///<data
+};
+
+/**
+ * Easy-to-use data storage object
+ */
+class Data {
+public:
+	/**
+	 * Buffer containing data
+	 * @note Only the first data_len bytes will be transmitted.
+	 */
+	string buffer;
+
+	/**
+	 * Buffer length, in bytes.
+	 * @note You can't set it to a value larger than the real length.
+	 */
+	number length;
+	
+	/**
+	 * Emits a string.
+	 *
+	 * Manipulates data and data_len consistently.
+	 * @note Don't mix text and binary data.
+	 */
+	void echo(string s /**<message*/);
+
+	/**
+	 * Transmits the whole file.
+	 *
+	 * Manipulates data and data_len consistently.
+	 * @note Use pcall() to catch errors.
+	 */
+	void passthru(string filename /**<source file*/);
+
+	/**
+	 * Pipes data to an external program.
+	 * @return data from its standard output
+	 * @note Use pcall() to catch errors.
+	 */
+	string pipe(string external /**<external program*/,
+		string data /**<data to be written to the program's stdin*/);
+};
