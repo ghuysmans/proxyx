@@ -1,0 +1,9 @@
+/** @mainpage
+ * \li Requests and responses can be modified on-the-fly by a Lua script.
+ * 		Examples scripts are provided in the <i>examples</i> directory.
+ * \li The build system is lightweight and portable.
+ * \li Each feature is tested, sometimes with different tools.
+ *
+ * The Lua interpreter is Copyright © 1994–2015 Lua.org, PUC-Rio.
+ * See http://www.lua.org/license.html.
+ */
