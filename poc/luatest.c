@@ -10,13 +10,8 @@
 #endif //HAVE_LUA
 
 int say(lua_State *L) {
-	int argc = lua_gettop(L);
-	if (argc!=1 || !lua_isstring(L, -1)) {
-		lua_pushstring(L, "say: expected a string");
-		lua_error(L);
-	}
-	else
-		printf("%s\n", lua_tostring(L, -1)); //FIXME
+	luaL_checkstring(L, 1);
+	printf("%s\n", lua_tostring(L, 1));
 	return 0;
 }
 
