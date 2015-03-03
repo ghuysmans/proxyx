@@ -9,6 +9,17 @@
 #include "lualib.h"
 #endif //HAVE_LUA
 
+int say(lua_State *L) {
+	int argc = lua_gettop(L);
+	if (argc!=1 || !lua_isstring(L, -1)) {
+		lua_pushstring(L, "say: expected a string");
+		lua_error(L);
+	}
+	else
+		printf("%s\n", lua_tostring(L, -1)); //FIXME
+	return 0;
+}
+
 int main(int argc, char *argv[]) {
 	int o, verbose=0, e=0;
 	while ((o=getopt(argc, argv, "p:v")) != -1) {
@@ -30,6 +41,21 @@ int main(int argc, char *argv[]) {
 		lua_pushnumber(L, 3141592);
 		lua_rawset(L, -3);
 		lua_setglobal(L, "t");
+		//
+		lua_newtable(L);
+			lua_pushstring(L, "headers");
+			lua_newtable(L);
+					lua_pushstring(L, "Host");
+					lua_pushstring(L, "mars.edu");
+				lua_rawset(L, -3);
+					lua_pushstring(L, "Content-Type");
+					lua_pushstring(L, "text/html");
+				lua_rawset(L, -3);
+			lua_rawset(L, -3);
+				lua_pushstring(L, "say");
+				lua_pushcfunction(L, say);
+			lua_rawset(L, -3);
+		lua_setglobal(L, "http");
 		if (e = luaL_loadfile(L, argv[1]) ||
 				lua_pcall(L, 0, LUA_MULTRET, 0))
 			fprintf(stderr, "%s\n", lua_tostring(L, -1));
