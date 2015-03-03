@@ -77,7 +77,7 @@ HTTP_HEADER *add_http_header(const HTTP_HEADER *h /**<first node*/,
  * Reads a date complying with either RFC 1123, RFC 850 or asctime's format.
  * @return 0 if successfull
  */
-int tm from_http_date(const char *raw /**<raw date string*/,
+int from_http_date(const char *raw /**<raw date string*/,
 		struct tm *d /**<decoded date*/);
 
 /**

@@ -21,7 +21,7 @@ void download(ProxyDown data /**<context*/);
  */
 class ProxyxUp {
 public:
-	Request client; ///<request received from the client
+	Request client; ///<Request received from the client
 	/**
 	 * Request "sent" by the proxy
 	 * 
@@ -36,9 +36,9 @@ public:
  */
 class ProxyxDown {
 public:
-	Response server; ///<server response (maybe cached)
+	Response server; ///<Server response (maybe cached)
 	/**
-	 * Request sent to the client
+	 * Response sent to the client
 	 * 
 	 * By default, #server is a copy of #client without
 	 * the cache-related headers.
@@ -92,7 +92,6 @@ public:
 	 * Emits a string.
 	 *
 	 * Manipulates data and data_len consistently.
-	 * @note Don't mix text and binary data.
 	 */
 	void echo(string s /**<message*/);
 

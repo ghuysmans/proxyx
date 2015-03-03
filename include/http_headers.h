@@ -11,7 +11,7 @@ HTTP_HEADER *parse_http_headers(const char *raw);
 void free_http_headers(const HTTP_HEADER *h);
 char *find_http_header(const HTTP_HEADER *h, const char *name);
 HTTP_HEADER *add_http_header(const HTTP_HEADER *h, const char *name, const char *value);
-int tm from_http_date(const char *raw, struct tm *d);
+int from_http_date(const char *raw, struct tm *d);
 char *to_http_date(const struct tm *d);
 int get_host_parts(const char *raw, char **host, char **service);
 
