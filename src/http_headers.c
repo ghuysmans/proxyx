@@ -87,3 +87,14 @@ int tm from_http_date(const char *raw /**<raw date string*/,
 char *to_http_date(const struct tm *d /**<target*/);
 
 //use gmtime(), mktime()
+
+/* FIXME find doc */
+
+/**
+ * Extracts the host and service from the HTTP Host header field.
+ * @return 0 if successfull
+ * FIXME consistency with "success"
+ */
+int get_host_parts(const char *raw /**<HTTP Host header field*/,
+		char **host /**<Host name copy, to be freed*/,
+		char **service /**<Service (in the raw buffer)*/);
