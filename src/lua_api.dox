@@ -14,6 +14,32 @@ void upload(ProxyUp data /**<context*/);
 void download(ProxyDown data /**<context*/);
 
 /**
+ * Emits a string.
+ *
+ * Operates on the current output.
+ * Manipulates data and data_len consistently.
+ */
+void echo(string s /**<message*/);
+
+/**
+ * Transmits the whole file.
+ *
+ * Operates on the current output.
+ * Manipulates data and data_len consistently.
+ * @note Use pcall() to catch errors.
+ */
+void passthru(string filename /**<source file*/);
+
+/**
+ * Pipes data to an external program.
+ * Operates on the current output.
+ * @return data from its standard output
+ * @note Use pcall() to catch errors.
+ */
+string pipe(string external /**<external program*/,
+	string data /**<data to be written to the program's stdin*/);
+
+/**
  * Input of #upload()
  *
  * A cache search will be performed upon the script's exit
@@ -87,27 +113,4 @@ public:
 	 * @note You can't set it to a value larger than the real length.
 	 */
 	number length;
-	
-	/**
-	 * Emits a string.
-	 *
-	 * Manipulates data and data_len consistently.
-	 */
-	void echo(string s /**<message*/);
-
-	/**
-	 * Transmits the whole file.
-	 *
-	 * Manipulates data and data_len consistently.
-	 * @note Use pcall() to catch errors.
-	 */
-	void passthru(string filename /**<source file*/);
-
-	/**
-	 * Pipes data to an external program.
-	 * @return data from its standard output
-	 * @note Use pcall() to catch errors.
-	 */
-	string pipe(string external /**<external program*/,
-		string data /**<data to be written to the program's stdin*/);
 };
