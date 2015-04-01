@@ -4,6 +4,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/modules"
 project(proxyx)
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 1)
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 #Lua optional support
 find_package(Lua52)
@@ -41,5 +42,5 @@ if(DOXYGEN_FOUND)
 endif(DOXYGEN_FOUND)
 
 add_executable(luatest poc/luatest.c)
-add_executable(client poc/client.c)
+add_executable(client poc/client.c src/socket.c)
 add_executable(md5test poc/md5test.c)
