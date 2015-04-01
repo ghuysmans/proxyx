@@ -6,6 +6,9 @@
 # Author: Asim Jalis
 # Date: 01/08/2003
 
+# Modified by Guillaume Huysmans to return the count
+# of failed tests as exit code.
+
 if test $# -eq 0 ; then FILES=*.c ; else FILES=$* ; fi
 
 echo '
@@ -18,7 +21,7 @@ echo '
 
 '
 
-cat $FILES | grep '^void Test' | 
+cat $FILES | grep '^void Test' |
     sed -e 's/(.*$//' \
         -e 's/$/(CuTest*);/' \
         -e 's/^/extern /'
@@ -26,13 +29,14 @@ cat $FILES | grep '^void Test' |
 echo \
 '
 
-void RunAllTests(void) 
+int RunAllTests(void)
 {
     CuString *output = CuStringNew();
     CuSuite* suite = CuSuiteNew();
+    int ret;
 
 '
-cat $FILES | grep '^void Test' | 
+cat $FILES | grep '^void Test' |
     sed -e 's/^void //' \
         -e 's/(.*$//' \
         -e 's/^/    SUITE_ADD_TEST(suite, /' \
@@ -45,11 +49,13 @@ echo \
     CuSuiteDetails(suite, output);
     printf("%s\n", output->buffer);
     CuStringDelete(output);
+    ret = suite->failCount;
     CuSuiteDelete(suite);
+    return ret;
 }
 
 int main(void)
 {
-    RunAllTests();
+    return RunAllTests();
 }
 '
