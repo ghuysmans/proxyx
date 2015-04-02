@@ -1,3 +1,0 @@
-./make-tests.sh>AllTests.c
-gcc -o AllTests *.c
-./AllTests

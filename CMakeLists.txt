@@ -41,6 +41,9 @@ if(DOXYGEN_FOUND)
 		VERBATIM)
 endif(DOXYGEN_FOUND)
 
+#unit tests
+include(tests/tests.cmake)
+
 add_executable(luatest poc/luatest.c)
 add_executable(client poc/client.c src/socket.c)
 add_executable(md5test poc/md5test.c)
