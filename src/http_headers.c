@@ -19,35 +19,87 @@
  */
 typedef struct _HTTP_HEADER {
 	char *field_name; ///<never NULL
-	char *field_value; ///<NULL if empty FIXME?
+	char *field_value; ///<may point to an empty string
 	struct _HTTP_HEADER *next; ///<NULL indicates this is the last node
 } HTTP_HEADER;
 
+
 /**
- * Parses HTTP headers until CRLF CRLF.
+ * Parses one HTTP header per line until NUL.
+ * Each line must end with \r\n,
+ * these characters musn't be repeated at the end.
  * @return NULL if raw doesn't point to a field name
+ * @note NUL characters will replace ':' and '\r'.
  */
-HTTP_HEADER *parse_http_headers(const char *raw /**<raw headers*/);
+HTTP_HEADER *parse_http_headers(char *raw /**<raw headers*/) {
+	if (*raw) {
+		HTTP_HEADER *h = malloc(sizeof(HTTP_HEADER));
+		char *end;
+		if (!h) {
+			free_http_headers(nx);
+			return NULL;
+		}
+		h->field_name = raw;
+		h->field_value = strstr(raw, ":");
+		if (!h->field_value) {
+			free_http_headers(nx);
+			free(h);
+			return NULL;
+		}
+		*(h->field_value++) = 0;
+		while (isblank(*h->field_value))
+			h->field_value++;
+		end = strstr(h->field_value, "\r\n");
+		*end = 0;
+		//TODO handle LWS in order to be RFC-compliant
+		h->next = nx;
+		return parse_headers(end+2, h);
+	}
+	else
+		return nx;
+}
 
 /**
  * Frees memory allocated for a given structure.
  */
-void free_http_headers(const HTTP_HEADER *h /**<first node*/);
+void free_http_headers(const HTTP_HEADER *h /**<first node*/) {
+	while (h) {
+		HTTP_HEADER *tmp = h->next;
+		free(h);
+		h = tmp;
+	}
+}
 
 /**
  * Finds the value associated to a field name.
  * @returns NULL if the field doesn't exist
  */
 char *find_http_header(const HTTP_HEADER *h /**<first node*/,
-		const char *name /**<field name*/);
+		const char *name /**<field name*/) {
+	while (h) {
+		if (strcmp(h->field_name, name))
+			h = h->next;
+		else
+			return h->field_value;
+	}
+	return NULL; //not found
+}
 
 /**
- * Adds a header field to the given structure.
- * @return NULL if memory couldn't be allocated
+ * Adds a header field to the given list (inserting at the head).
+ * @return NULL if memory couldn't be allocated, otherwise the new first node.
  */
 HTTP_HEADER *add_http_header(const HTTP_HEADER *h /**<first node*/,
 		const char *name /**<field name*/,
-		const char *value /**<field value*/);
+		const char *value /**<field value*/) {
+	HTTP_HEADER* nw = malloc(sizeof(HTTP_HEADER));
+	if (nw) {
+		nw->field_name = name;
+		nw->field_value = value;
+		nw->next = h;
+	}
+	return nw;
+}
 
 /* 3.3
  * All HTTP date/time stamps MUST be represented in Greenwich Mean Time (GMT),
@@ -95,6 +147,6 @@ char *to_http_date(const struct tm *d /**<target*/);
  * @return 0 if successfull
  * FIXME consistency with "success"
  */
-int get_host_parts(const char *raw /**<HTTP Host header field*/,
+int get_host_parts(const char *field_value /**<HTTP Host header field*/,
 		char **host /**<Host name copy, to be freed*/,
 		char **service /**<Service (in the raw buffer)*/);
