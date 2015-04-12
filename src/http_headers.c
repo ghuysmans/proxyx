@@ -162,7 +162,13 @@ int get_host_parts(const char *field_value /**<HTTP Host header field*/,
 	if (*host) {
 		**host = 0; //terminate *service
 		*host += 3;
-		colon = strchr(*host, ':');
+		if (**host == '[') {
+			colon = strstr(*host, "]:");
+			if (colon)
+				colon++;
+		}
+		else
+			colon = strchr(*host, ':');
 		*resource = strchr(*host, '/');
 		if (colon && (colon<*resource || !*resource)) {
 			*colon = 0; //terminate *host
