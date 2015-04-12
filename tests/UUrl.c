@@ -36,4 +36,5 @@ void TestUrl6(CuTest *tc) {
 	AssertPartsEquals(tc, "http://[1:2]:port", "[1:2]", "port", "");
 	AssertPartsEquals(tc, "http://[1:2]", "[1:2]", "http", "");
 	AssertPartsEquals(tc, "http://[1:2]/", "[1:2]", "http", "");
+	AssertPartsEquals(tc, "http://[1:2]/", "nope", "", "");
 }

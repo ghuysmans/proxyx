@@ -3,6 +3,8 @@
  * RFC 2616 headers encoding/decoding library
  */
 #include "http_headers.h"
+#include <string.h>
+#include <stdlib.h>
 
 /* 4.2
  * [...] each header field consists of a name followed by a colon (":") and
@@ -14,6 +16,8 @@
  * when generating HTTP constructs, since there might exist
  * some implementations that fail to accept anything. */
 
+#ifndef _HTTP_HEADER_STRUCT
+#define _HTTP_HEADER_STRUCT
 /**
  * Linked list node representing an HTTP header
  */
@@ -22,6 +26,7 @@ typedef struct _HTTP_HEADER {
 	char *field_value; ///<may point to an empty string
 	struct _HTTP_HEADER *next; ///<NULL indicates this is the last node
 } HTTP_HEADER;
+#endif //_HTTP_HEADER_STRUCT
 
 
 /**
@@ -31,7 +36,7 @@ typedef struct _HTTP_HEADER {
  * @return NULL if raw doesn't point to a field name
  * @note NUL characters will replace ':' and '\r'.
  */
-HTTP_HEADER *parse_http_headers(char *raw /**<raw headers*/) {
+HTTP_HEADER *parse_http_headers(char *raw /**<raw headers*/, HTTP_HEADER *nx) {
 	if (*raw) {
 		HTTP_HEADER *h = malloc(sizeof(HTTP_HEADER));
 		char *end;
@@ -53,7 +58,7 @@ HTTP_HEADER *parse_http_headers(char *raw /**<raw headers*/) {
 		*end = 0;
 		//TODO handle LWS in order to be RFC-compliant
 		h->next = nx;
-		return parse_headers(end+2, h);
+		return parse_http_headers(end+2, h);
 	}
 	else
 		return nx;
@@ -65,7 +70,7 @@ HTTP_HEADER *parse_http_headers(char *raw /**<raw headers*/) {
 void free_http_headers(const HTTP_HEADER *h /**<first node*/) {
 	while (h) {
 		HTTP_HEADER *tmp = h->next;
-		free(h);
+		free((void*)h);
 		h = tmp;
 	}
 }
@@ -94,9 +99,9 @@ HTTP_HEADER *add_http_header(const HTTP_HEADER *h /**<first node*/,
 		const char *value /**<field value*/) {
 	HTTP_HEADER* nw = malloc(sizeof(HTTP_HEADER));
 	if (nw) {
-		nw->field_name = name;
-		nw->field_value = value;
-		nw->next = h;
+		nw->field_name = (char*)name;
+		nw->field_value = (char*)value;
+		nw->next = (HTTP_HEADER*)h;
 	}
 	return nw;
 }
@@ -147,12 +152,12 @@ char *to_http_date(const struct tm *d /**<target*/);
  * @return 0 if successful
  * @note no data is copied
  */
-int get_host_parts(char *field_value /**<HTTP Host header field*/,
+int get_host_parts(const char *field_value /**<HTTP Host header field*/,
 		char **host /**<Host name*/,
 		char **service /**<Service*/,
 		char **resource /**<Resource identifier without leading slash*/) {
 	char *colon;
-	*service = field_value;
+	*service = (char*)field_value;
 	*host = strstr(field_value, "://");
 	if (*host) {
 		**host = 0; //terminate *service

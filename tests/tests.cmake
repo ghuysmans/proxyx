@@ -18,6 +18,6 @@ if (UNIX)
 	execute_process(
 		COMMAND "tests/make-tests.sh" ${UnitTests}
 		OUTPUT_FILE "tests/UAll.c")
-	add_executable(UAll ${UnitTests} tests/CuTest.c)
+	add_executable(UAll ${UnitTests} tests/CuTest.c src/http_headers.c)
 	add_test(UAll UAll)
 endif (UNIX)
