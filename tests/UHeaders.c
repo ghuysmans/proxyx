@@ -16,8 +16,10 @@ void AssertHeadersContain(CuTest *tc, HTTP_HEADER *h, char *name, char *value) {
 }
 
 void TestHeaders(CuTest *tc) {
-	HTTP_HEADER *headers = parse_http_headers("a: b\r\nc: 42: nope\r\n", NULL);
+	char *s = strdup("a: b\r\nc: 42: nope\r\n");
+	HTTP_HEADER *headers = parse_http_headers(s, NULL);
 	AssertHeadersContain(tc, headers, "a", "b");
 	AssertHeadersContain(tc, headers, "c", "42: nope");
 	free_http_headers(headers);
+	free(s);
 }
