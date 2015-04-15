@@ -5,6 +5,7 @@ client
 luatest
 md5test
 UAll
+status
 #CMake
 Makefile
 CMakeCache.txt
