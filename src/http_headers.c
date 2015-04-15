@@ -45,7 +45,7 @@ HTTP_HEADER *parse_http_headers(char *raw /**<raw headers*/, HTTP_HEADER *nx) {
 			return NULL;
 		}
 		h->field_name = raw;
-		h->field_value = strstr(raw, ":");
+		h->field_value = strchr(raw, ':');
 		if (!h->field_value) {
 			free_http_headers(nx);
 			free(h);
