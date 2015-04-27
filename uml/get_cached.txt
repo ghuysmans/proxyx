@@ -1,0 +1,36 @@
+@startuml
+actor Browser
+participant Proxy
+database Server
+
+activate Browser
+Browser -> Proxy: GET HTTP/1.1
+activate Proxy
+alt cached URL
+	alt no-cache
+		Proxy -> Server: GET If-None-Match
+		activate Server
+		Server -> Proxy: response
+		alt 304 Not Modified
+			Proxy -> Browser: cached response
+		else not no-store and not private
+			Proxy -> Proxy: store
+			Proxy -> Browser: new response
+		end
+		deactivate Server
+	else
+		Proxy -> Browser: cached response
+	end
+else
+	Proxy -> Server: GET HTTP/1.1
+	activate Server
+	Server -> Proxy: response
+	deactivate Server
+	alt not no-store and not private
+		Proxy -> Proxy: store
+	end
+	Proxy -> Browser: new response
+end
+deactivate Proxy
+deactivate Browser
+@enduml
