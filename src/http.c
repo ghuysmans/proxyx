@@ -6,26 +6,18 @@
 
 /**
  * Fetches data using HTTP.
- * @return 0 on success
+ * @return 0 when data is populated
+ * @return 1 when data is incomplete (too large).
  */
-int fetch_http(const char *host /**<host to connect to*/,
-		const char *service /**<service or port number*/,
-		const char *method /**<HTTP method*/,
-		const char *protocol /**<protocol in the HTTP request*/,
-		const HTTP_HEADER *request_headers /**<sent headers*/,
-		HTTP_HEADER **response_headers /**<received headers*/,
-		char **data /**<received data*/,
-		size_t *data_len /**<received data length*/);
+int fetch_http(const int sockfd /**<socket to read the data from*/,
+		char *receive /**<receive buffer*/,
+		const size_t receive_len /**<receive buffer length*/,
+		char **start_line /**<the line before the headers block*/,
+		HTTP_HEADER **headers /**<received headers*/,
+		char **data /**<data buffer*/,
+		size_t *data_len /**<data length*/);
 
 /**
- * Handles an HTTP client, first accepting an incoming connection.
+ * Handles an HTTP client.
  */
-void handle_http_client(int sockfd /**<listening socket*/);
-
-/**
- * Processes an HTTP response (for scripting, etc.).
- */
-void process_http_response(int usersock /**<user socket*/,
-		HTTP_HEADER *headers /**<HTTP headers*/,
-		char *data /**<Response data*/,
-		size_t *data_len /**<Response data length*/);
+void handle_http_client(int sockfd /**<socket returned by accept()*/);
