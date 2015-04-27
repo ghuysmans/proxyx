@@ -23,17 +23,17 @@ void AssertPartsEquals(CuTest *tc, char *url, char *host, char *service, char *r
 }
 
 void TestDnsUrl(CuTest *tc) {
-	AssertPartsEquals(tc, "http://a.com/t/p:a", "a.com", "http", "t/p:a");
-	AssertPartsEquals(tc, "http://a.com:port/t/p:a", "a.com", "port", "t/p:a");
-	AssertPartsEquals(tc, "http://a.com:port", "a.com", "port", "");
-	AssertPartsEquals(tc, "http://a.com", "a.com", "http", "");
-	AssertPartsEquals(tc, "http://a.com/", "a.com", "http", "");
+	AssertPartsEquals(tc, "a.com/t/p:a", "a.com", "http", "t/p:a");
+	AssertPartsEquals(tc, "a.com:port/t/p:a", "a.com", "port", "t/p:a");
+	AssertPartsEquals(tc, "a.com:port", "a.com", "port", "");
+	AssertPartsEquals(tc, "a.com", "a.com", "http", "");
+	AssertPartsEquals(tc, "a.com/", "a.com", "http", "");
 }
 
 void TestUrl6(CuTest *tc) {
-	AssertPartsEquals(tc, "http://[1:2]/t/p:a", "[1:2]", "http", "t/p:a");
-	AssertPartsEquals(tc, "http://[1:2]:port/t/p:a", "[1:2]", "port", "t/p:a");
-	AssertPartsEquals(tc, "http://[1:2]:port", "[1:2]", "port", "");
-	AssertPartsEquals(tc, "http://[1:2]", "[1:2]", "http", "");
-	AssertPartsEquals(tc, "http://[1:2]/", "[1:2]", "http", "");
+	AssertPartsEquals(tc, "[1:2]/t/p:a", "[1:2]", "http", "t/p:a");
+	AssertPartsEquals(tc, "[1:2]:port/t/p:a", "[1:2]", "port", "t/p:a");
+	AssertPartsEquals(tc, "[1:2]:port", "[1:2]", "port", "");
+	AssertPartsEquals(tc, "[1:2]", "[1:2]", "http", "");
+	AssertPartsEquals(tc, "[1:2]/", "[1:2]", "http", "");
 }

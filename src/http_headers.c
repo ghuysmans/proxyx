@@ -157,31 +157,26 @@ int get_host_parts(const char *field_value /**<HTTP Host header field*/,
 		char **service /**<Service*/,
 		char **resource /**<Resource identifier without leading slash*/) {
 	char *colon;
-	*service = (char*)field_value;
-	*host = strstr(field_value, "://");
-	if (*host) {
-		**host = 0; //terminate *service
-		*host += 3;
-		if (**host == '[') {
-			colon = strstr(*host, "]:");
-			if (colon)
-				colon++;
-		}
-		else
-			colon = strchr(*host, ':');
-		*resource = strchr(*host, '/');
-		if (colon && (colon<*resource || !*resource)) {
-			*colon = 0; //terminate *host
-			*service = colon+1;
-		}
-		if (*resource) {
-			**resource = 0; //terminate *host or *service
-			(*resource)++;
-		}
-		else
-			*resource = "";
-		return 0;
+	*host = (char*)field_value;
+	if (**host == '[') {
+		colon = strstr(*host, "]:");
+		if (colon)
+			colon++;
 	}
 	else
-		return 1;
+		colon = strchr(*host, ':');
+	*resource = strchr(*host, '/');
+	if (colon && (colon<*resource || !*resource)) {
+		*colon = 0; //terminate *host
+		*service = colon+1;
+	}
+	else
+		*service = "http";
+	if (*resource) {
+		**resource = 0; //terminate *host or *service
+		(*resource)++;
+	}
+	else
+		*resource = "";
+	return 0;
 }
