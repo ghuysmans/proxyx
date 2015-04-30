@@ -98,3 +98,28 @@ ssize_t read_until(int fd /**<UNIX file descriptor*/,
 		}
 	}
 }
+
+/**
+ * Flushes the given buffer then uses read() on fd until it returns -1.
+ * @return number of bytes read
+ */
+ssize_t read_all(int fd /**<UNIX file descriptor, -1 means none*/,
+		BUFFER **b /**<buffer pointer*/,
+		size_t chunk /**<chunk size, in bytes*/,
+		void (*callback)(char *buffer, size_t size) /**<callback function*/) {
+	char buf[chunk];
+	size_t total=0, nread;
+	if (*b) {
+		total = (*b)->size - (*b)->position;
+		callback((*b)->data+(*b)->position, total);
+		free(*b);
+		*b = NULL;
+	}
+	if (fd != -1) {
+		while ((nread=read(fd, buf, chunk)) != -1) {
+			callback(buf, nread);
+			total += nread;
+		}
+	}
+	return total;
+}
