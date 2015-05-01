@@ -1,11 +1,11 @@
 *.swp
 #binaries
-client
-luatest
-md5test
-UAll
-status
-buffer
+/client
+/luatest
+/md5test
+/UAll
+/status
+/buffer
 #CMake
 Makefile
 CMakeCache.txt
