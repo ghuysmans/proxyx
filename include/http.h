@@ -2,8 +2,8 @@
 #define _HTTP_H
 
 #include "http_headers.h"
+#include "buffer.h"
 
-int fetch_http(const int sockfd, char *buf, const size_t buf_len, char **start_line, HTTP_HEADER **headers, char **data, size_t *data_len, size_t *remaining);
-void handle_http_client(int sockfd);
+int fetch_http(const int sockfd, BUFFER **b, size_t chunk, char **start_line, HTTP_HEADER **headers, char **data, size_t *data_len, size_t *remaining);
 
 #endif //_HTTP_H
