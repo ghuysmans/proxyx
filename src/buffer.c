@@ -6,6 +6,8 @@
 /**
  * Reads data from a buffer created by read_until and then
  * from a file descriptor (simply using read).
+ * @return number of bytes read
+ * @return -1 on error
  */
 ssize_t read_buffered(int fd /**<UNIX file descriptor*/,
 		char *dest /**<pre-allocated destination*/,
@@ -29,10 +31,10 @@ ssize_t read_buffered(int fd /**<UNIX file descriptor*/,
 	}
 	while (position < count) {
 		int nread = read(fd, dest+position, count-position);
-		if (nread == -1)
-			break;
-		else
+		if (nread > 0)
 			position += nread;
+		else
+			break;
 	}
 	return position;
 }
@@ -40,6 +42,8 @@ ssize_t read_buffered(int fd /**<UNIX file descriptor*/,
 /**
  * Makes a buffered read from fd and b until s is found.
  * @note Simply deallocate *b with free() when you don't need it anymore.
+ * @return number of bytes read
+ * @return -1 on error
  */
 ssize_t read_until(int fd /**<UNIX file descriptor*/,
 		char **dest /**<destination, destroyed (without free)*/,
@@ -88,13 +92,15 @@ ssize_t read_until(int fd /**<UNIX file descriptor*/,
 		}
 		else {
 			int nread = read(fd, *dest+used, size-used);
-			if (nread == -1) {
+			if (nread > 0)
+				used += nread;
+			else if (!nread)
+				return used;
+			else {
 				free(*dest);
 				*dest = NULL;
 				return -1;
 			}
-			else
-				used += nread;
 		}
 	}
 }
@@ -102,6 +108,7 @@ ssize_t read_until(int fd /**<UNIX file descriptor*/,
 /**
  * Flushes the given buffer then uses read() on fd until it returns -1.
  * @return number of bytes read
+ * @return -1 on error
  */
 ssize_t read_all(int fd /**<UNIX file descriptor, -1 means none*/,
 		BUFFER **b /**<buffer pointer*/,
@@ -116,10 +123,12 @@ ssize_t read_all(int fd /**<UNIX file descriptor, -1 means none*/,
 		*b = NULL;
 	}
 	if (fd != -1) {
-		while ((nread=read(fd, buf, chunk)) != -1) {
+		while ((nread=read(fd, buf, chunk)) > 0) {
 			callback(buf, nread);
 			total += nread;
 		}
+		if (nread == -1)
+			return -1;
 	}
 	return total;
 }
