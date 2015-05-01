@@ -12,12 +12,16 @@ endmacro(expect)
 
 if (UNIX)
 	enable_testing()
-	expect(dummy_dir ls "TODO")
-	#unit tests
+	#CuTest
 	file(GLOB UnitTests tests/U*.c)
 	execute_process(
 		COMMAND "tests/make-tests.sh" ${UnitTests}
 		OUTPUT_FILE "tests/UAll.c")
 	add_executable(UAll ${UnitTests} tests/CuTest.c src/http_headers.c)
 	add_test(UAll UAll)
+	#Other tests
+	add_executable(buffer tests/buffer.c src/buffer.c src/socket.c)
+	expect(buffer/a tests/buffer.sh a)
+	expect(buffer/b tests/buffer.sh b)
+	expect(buffer/c tests/buffer.sh c)
 endif (UNIX)

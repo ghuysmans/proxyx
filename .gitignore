@@ -1,11 +1,11 @@
 *.swp
-tests/UAll.c
 #binaries
 client
 luatest
 md5test
 UAll
 status
+buffer
 #CMake
 Makefile
 CMakeCache.txt
