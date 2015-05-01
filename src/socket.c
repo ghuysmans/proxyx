@@ -14,7 +14,9 @@
 
 /**
  * Creates a TCP client/server socket.
- * @return descriptor
+ * @return -2 on getaddrinfo error
+ * @return -1 on a socket API error
+ * @return UNIX file descriptor
  */
 int get_tcp_socket(const char *host /**<host to connect to (name or IP)*/,
 		const char *service /**<service name or port number*/,
@@ -23,8 +25,10 @@ int get_tcp_socket(const char *host /**<host to connect to (name or IP)*/,
 	const struct addrinfo hints = {is_server?AI_PASSIVE:0,
 		AF_UNSPEC, SOCK_STREAM, 0, 0, NULL, NULL, NULL};
 	struct addrinfo *res=NULL, *p;
-	if (e = getaddrinfo(host, service, &hints, &res))
+	if (e = getaddrinfo(host, service, &hints, &res)) {
 		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(e));
+		return -2;
+	}
 	else {
 		for (p=res; p; p=p->ai_next) {
 			if ((sock=socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1)
@@ -37,6 +41,6 @@ int get_tcp_socket(const char *host /**<host to connect to (name or IP)*/,
 				break;
 		}
 		freeaddrinfo(res);
+		return sock;
 	}
-	return sock;
 }
