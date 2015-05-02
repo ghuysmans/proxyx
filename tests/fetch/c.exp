@@ -1,3 +1,4 @@
-status: 100 Continue
+status: HTTP/1.1 100 Continue
 headers:
 data:
+(null)
