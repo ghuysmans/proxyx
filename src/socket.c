@@ -20,9 +20,9 @@
  */
 int get_tcp_socket(const char *host /**<host to connect to (name or IP)*/,
 		const char *service /**<service name or port number*/,
-		int is_server /**<boolean, implies host==NULL*/) {
+		int server_backlog /**<listen backlog, 0 creates a client socket*/) {
 	int sock=-1, e;
-	const struct addrinfo hints = {is_server?AI_PASSIVE:0,
+	const struct addrinfo hints = {server_backlog ? AI_PASSIVE : 0,
 		AF_UNSPEC, SOCK_STREAM, 0, 0, NULL, NULL, NULL};
 	struct addrinfo *res=NULL, *p;
 	if (e = getaddrinfo(host, service, &hints, &res)) {
@@ -33,7 +33,8 @@ int get_tcp_socket(const char *host /**<host to connect to (name or IP)*/,
 		for (p=res; p; p=p->ai_next) {
 			if ((sock=socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1)
 				continue;
-			else if (connect(sock, p->ai_addr, p->ai_addrlen) == -1) {
+			else if ((server_backlog && (bind(sock, p->ai_addr, p->ai_addrlen)==-1 || listen(sock, server_backlog)==-1)) ||
+					(!server_backlog && connect(sock, p->ai_addr, p->ai_addrlen)==-1)) {
 				close(sock);
 				sock = -1;
 			}
