@@ -2,38 +2,26 @@
 #include <string.h>
 #include "CuTest.h"
 
-void AssertPartsEquals(CuTest *tc, char *url, char *host, char *service, char *resource) {
-	char *h, *s, *r;
+void AssertPartsEquals(CuTest *tc, char *url, char *host, char *service) {
+	char *h, *s;
 	char *u=strdup(url);
 	char *m=malloc(strlen(url)+20), *p=m+strlen(url);
-	int e=get_host_parts(u, &h, &s, &r);
+	get_host_parts(u, &h, &s);
 	strcpy(m, url);
-	strcpy(p, " return");
-	CuAssertIntEquals_Msg(tc, m, 0, e);
-	if (!e) {
-		strcpy(p, " host");
-		CuAssertStrEquals_Msg(tc, m, host, h);
-		strcpy(p, " service");
-		CuAssertStrEquals_Msg(tc, m, service, s);
-		strcpy(p, " resource");
-		CuAssertStrEquals_Msg(tc, m, resource, r);
-	}
+	strcpy(p, " host");
+	CuAssertStrEquals_Msg(tc, m, host, h);
+	strcpy(p, " service");
+	CuAssertStrEquals_Msg(tc, m, service, s);
 	free(m);
 	free(u);
 }
 
 void TestDnsUrl(CuTest *tc) {
-	AssertPartsEquals(tc, "a.com/t/p:a", "a.com", "http", "t/p:a");
-	AssertPartsEquals(tc, "a.com:port/t/p:a", "a.com", "port", "t/p:a");
-	AssertPartsEquals(tc, "a.com:port", "a.com", "port", "");
-	AssertPartsEquals(tc, "a.com", "a.com", "http", "");
-	AssertPartsEquals(tc, "a.com/", "a.com", "http", "");
+	AssertPartsEquals(tc, "a.com:port", "a.com", "port");
+	AssertPartsEquals(tc, "a.com", "a.com", "http");
 }
 
 void TestUrl6(CuTest *tc) {
-	AssertPartsEquals(tc, "[1:2]/t/p:a", "[1:2]", "http", "t/p:a");
-	AssertPartsEquals(tc, "[1:2]:port/t/p:a", "[1:2]", "port", "t/p:a");
-	AssertPartsEquals(tc, "[1:2]:port", "[1:2]", "port", "");
-	AssertPartsEquals(tc, "[1:2]", "[1:2]", "http", "");
-	AssertPartsEquals(tc, "[1:2]/", "[1:2]", "http", "");
+	AssertPartsEquals(tc, "[1:2]:port", "[1:2]", "port");
+	AssertPartsEquals(tc, "[1:2]", "[1:2]", "http");
 }

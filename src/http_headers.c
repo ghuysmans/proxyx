@@ -149,13 +149,11 @@ char *to_http_date(const struct tm *d /**<target*/);
 
 /**
  * Extracts the host and service from the HTTP Host header field.
- * @return 0 if successful
  * @note no data is copied
  */
-int get_host_parts(const char *field_value /**<HTTP Host header field*/,
-		char **host /**<Host name*/,
-		char **service /**<Service*/,
-		char **resource /**<Resource identifier without leading slash*/) {
+void get_host_parts(const char *field_value /**<HTTP Host header field*/,
+		char **host /**<host name*/,
+		char **service /**<hervice*/) {
 	char *colon;
 	*host = (char*)field_value;
 	if (**host == '[') {
@@ -165,18 +163,10 @@ int get_host_parts(const char *field_value /**<HTTP Host header field*/,
 	}
 	else
 		colon = strchr(*host, ':');
-	*resource = strchr(*host, '/');
-	if (colon && (colon<*resource || !*resource)) {
+	if (colon) {
 		*colon = 0; //terminate *host
 		*service = colon+1;
 	}
 	else
 		*service = "http";
-	if (*resource) {
-		**resource = 0; //terminate *host or *service
-		(*resource)++;
-	}
-	else
-		*resource = "";
-	return 0;
 }
