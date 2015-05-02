@@ -2,7 +2,7 @@
  * @file
  * RFC 2616 headers encoding/decoding library
  */
-#include "http_headers.h"
+#include "../include/http_headers.h"
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
