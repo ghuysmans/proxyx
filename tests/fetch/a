@@ -1,0 +1,15 @@
+HTTP/1.1 302 Found
+Cache-Control: private
+Content-Type: text/html; charset=UTF-8
+Location: http://www.google.be/?gfe_rd=cr&ei=PelDVYHFLYvmPPfggKAC
+Content-Length: 256
+Date: Fri, 01 May 2015 20:59:41 GMT
+Server: GFE/2.0
+Alternate-Protocol: 80:quic,p=1
+
+<HTML><HEAD><meta http-equiv="content-type" content="text/html;charset=utf-8">
+<TITLE>302 Moved</TITLE></HEAD><BODY>
+<H1>302 Moved</H1>
+The document has moved
+<A HREF="http://www.google.be/?gfe_rd=cr&amp;ei=PelDVYHFLYvmPPfggKAC">here</A>.
+</BODY></HTML>

@@ -44,6 +44,7 @@ ssize_t read_buffered(int fd /**<UNIX file descriptor*/,
  * @note Simply deallocate *b with free() when you don't need it anymore.
  * @return number of bytes read
  * @return -1 on error
+ * @return 0 when s couldn't be found
  */
 ssize_t read_until(int fd /**<UNIX file descriptor*/,
 		char **dest /**<destination, destroyed (without free)*/,
@@ -95,7 +96,7 @@ ssize_t read_until(int fd /**<UNIX file descriptor*/,
 			if (nread > 0)
 				used += nread;
 			else if (!nread)
-				return used;
+				return 0; //not found
 			else {
 				free(*dest);
 				*dest = NULL;

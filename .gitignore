@@ -6,6 +6,8 @@
 /UAll
 /status
 /buffer
+/fetch
+/proxyx
 #CMake
 Makefile
 CMakeCache.txt
