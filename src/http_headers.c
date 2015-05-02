@@ -134,7 +134,7 @@ HTTP_HEADER *add_http_header(const HTTP_HEADER *h /**<first node*/,
 //FORMATS
 char* rfc850="%A, %d-%b-%y %H:%M:%S GMT";
 char* rfc1123="%a, %d %b %Y %H:%M:%S GMT";
-char* asctime="%a %b %d %H:%M:%S %Y";
+char* asctimeformat="%a %b %d %H:%M:%S %Y";
 
 /**
  * Reads a date complying with either RFC 1123, RFC 850 or asctime's format.
@@ -143,12 +143,15 @@ char* asctime="%a %b %d %H:%M:%S %Y";
 int from_http_date(const char *raw /**<raw date string*/,
 		struct tm *d /**<decoded date*/){
 	//trying everything
-	char* res = strptime(raw, rfc850, d);//RFC850?
+	int res;
+	malloc(sizeof(res));
+	res = strptime(raw, rfc850, d);//RFC850?
         if (res == NULL){
 		res = strptime(raw, rfc1123, d);//RFC1123?
 		if (res == NULL){
-			res = strptime(raw, asctime, d);//ASCTIME?
+			res = strptime(raw, asctimeformat, d);//ASCTIME?
 			if (res == NULL){
+				free(res);
 				return -1;//Error : Wrong date format
 			}
 		}
@@ -161,14 +164,14 @@ int from_http_date(const char *raw /**<raw date string*/,
  * Converts a date to the preferred HTTP date format (RFC 1123).
  * @return NULL if memory couldn't be allocated
  */
-char *to_http_date(const struct tm *d /**<target*/){
-	char converted[64];
-	if (strftime(converted, 64, rfc1123, &tm) == NULL){
+char *to_http_date(const struct tm *d){
+	static char converted[64];
+	int res = strftime(converted, 64, rfc1123, d);
+	if (res == NULL){
 		return NULL; 
 	}
-	else{
 		return converted;
-	}
+}
 
 
 //use gmtime(), mktime()
@@ -208,3 +211,4 @@ int get_host_parts(const char *field_value /**<HTTP Host header field*/,
 		*resource = "";
 	return 0;
 }
+
