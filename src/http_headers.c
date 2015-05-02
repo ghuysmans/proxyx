@@ -5,6 +5,7 @@
 #include "http_headers.h"
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 
 /* 4.2
  * [...] each header field consists of a name followed by a colon (":") and
@@ -130,18 +131,45 @@ HTTP_HEADER *add_http_header(const HTTP_HEADER *h /**<first node*/,
 					| "Sep" | "Oct" | "Nov" | "Dec"
  */
 
+//FORMATS
+char* rfc850="%A, %d-%b-%y %H:%M:%S GMT";
+char* rfc1123="%a, %d %b %Y %H:%M:%S GMT";
+char* asctime="%a %b %d %H:%M:%S %Y";
+
 /**
  * Reads a date complying with either RFC 1123, RFC 850 or asctime's format.
  * @return 0 if successfull
  */
 int from_http_date(const char *raw /**<raw date string*/,
-		struct tm *d /**<decoded date*/);
+		struct tm *d /**<decoded date*/){
+	//trying everything
+	char* res = strptime(raw, rfc850, d);//RFC850?
+        if (res == NULL){
+		res = strptime(raw, rfc1123, d);//RFC1123?
+		if (res == NULL){
+			res = strptime(raw, asctime, d);//ASCTIME?
+			if (res == NULL){
+				return -1;//Error : Wrong date format
+			}
+		}
+	}
+	return 0;
+}
+	
 
 /**
  * Converts a date to the preferred HTTP date format (RFC 1123).
  * @return NULL if memory couldn't be allocated
  */
-char *to_http_date(const struct tm *d /**<target*/);
+char *to_http_date(const struct tm *d /**<target*/){
+	char converted[64];
+	if (strftime(converted, 64, rfc1123, &tm) == NULL){
+		return NULL; 
+	}
+	else{
+		return converted;
+	}
+
 
 //use gmtime(), mktime()
 
