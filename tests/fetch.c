@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
 			perror("open");
 			return 1;
 		}
-		else if (ret = fetch_http(fd, &b, 1024, &fl, &h, &d, &dl, &rem))
+		else if (ret = fetch_http(fd, &b, 1024, &fl, &h, &d, &dl, &rem, 1))
 			return -1;
 		else {
 			HTTP_HEADER *p;

@@ -18,7 +18,8 @@ int fetch_http(const int sockfd /**<socket to read the data from*/,
 		HTTP_HEADER **headers /**<received headers*/,
 		char **data /**<data buffer*/,
 		size_t *data_len /**<data length*/,
-		size_t *remaining /**<remaining data length*/) {
+		ssize_t *remaining /**<remaining data length, -1 means unknown*/,
+		int force_data /**<expect data even without Content-Length*/) {
 	//FIXME duplicate headers strings to free them more easily
 	int sll = read_until(sockfd, start_line, "\r\n", chunk, b);
 	*headers = NULL;
@@ -71,13 +72,14 @@ nope:
 		}
 		else if (!strncmp(*start_line, "HTTP/1.1 1", 10) ||
 				!strncmp(*start_line, "HTTP/1.1 204", 12) ||
-				!strncmp(*start_line, "HTTP/1.1 304", 12)) {
+				!strncmp(*start_line, "HTTP/1.1 304", 12) ||
+				!force_data) {
 			*data_len = *remaining = 0;
 			*data = NULL;
 		}
 		else {
 			*remaining = -1; //unknown
-			if (*data = malloc(*data_len+1)) {
+			if (*data = malloc(chunk+1)) {
 				*data_len = read_buffered(sockfd, *data, chunk, b);
 				if (*data_len < chunk)
 					*remaining = 0;
