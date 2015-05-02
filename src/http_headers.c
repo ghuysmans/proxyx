@@ -106,6 +106,21 @@ HTTP_HEADER *add_http_header(const HTTP_HEADER *h /**<first node*/,
 	return nw;
 }
 
+/**
+ * Writes headers to the given file descriptor.
+ */
+void send_http_headers(const int fd /**<UNIX file descriptor*/,
+		const HTTP_HEADER *h /**<first node*/) {
+	if (h) {
+		write(fd, h->field_name, strlen(h->field_name));
+		write(fd, ": ", 2);
+		write(fd, h->field_value, strlen(h->field_value));
+		write(fd, "\r\n", 2);
+		send_http_headers(fd, h->next);
+	}
+}
+
+
 /* 3.3
  * All HTTP date/time stamps MUST be represented in Greenwich Mean Time (GMT),
  * without exception. For the purposes of HTTP, GMT is exactly equal to UTC

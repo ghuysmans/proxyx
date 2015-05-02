@@ -16,6 +16,7 @@ HTTP_HEADER *parse_http_headers(char *raw, HTTP_HEADER *nx);
 void free_http_headers(const HTTP_HEADER *h);
 char *find_http_header(const HTTP_HEADER *h, const char *name);
 HTTP_HEADER *add_http_header(const HTTP_HEADER *h, const char *name, const char *value);
+void send_http_headers(const int fd, const HTTP_HEADER *h);
 int from_http_date(const char *raw, struct tm *d);
 char *to_http_date(const struct tm *d);
 void get_host_parts(const char *field_value, char **host, char **service);
