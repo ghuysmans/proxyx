@@ -6,6 +6,7 @@
 /UAll
 /status
 /buffer
+/fetch
 #CMake
 Makefile
 CMakeCache.txt
