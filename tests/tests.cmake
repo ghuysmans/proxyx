@@ -20,6 +20,7 @@ if (UNIX)
 	add_executable(UAll ${UnitTests} tests/CuTest.c src/http_headers.c)
 	add_test(UAll UAll)
 	#Other tests
+	expect(half tests/half.sh x)
 	add_executable(buffer tests/buffer.c src/buffer.c src/socket.c)
 	expect(buffer/a tests/buffer.sh a)
 	expect(buffer/b tests/buffer.sh b)

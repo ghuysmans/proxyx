@@ -1,0 +1,8 @@
+GET /b HTTP/1.1
+Host: localhost:2043
+
+GET /b HTTP/1.1
+Host: localhost:2043
+Connection: close
+
+

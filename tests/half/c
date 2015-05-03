@@ -1,0 +1,7 @@
+GET /c HTTP/1.1
+Host: localhost:2043
+
+GET /c HTTP/1.1
+Host: localhost:2043
+
+

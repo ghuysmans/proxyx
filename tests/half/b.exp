@@ -1,0 +1,6 @@
+DEBUG: accepted.
+DEBUG > GET /b HTTP/1.1
+DEBUG < HTTP/1.1 200 OK
+DEBUG > GET /b HTTP/1.1
+DEBUG < HTTP/1.1 200 OK
+DEBUG: closed.
