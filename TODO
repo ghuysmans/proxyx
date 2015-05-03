@@ -1,18 +1,10 @@
-bulletproof with many useful tests:
-	curl/wget (it must be able to use an HTTP proxy)
-	python -m SimpleHTTPServer
-	CMake integration
-well-documented API
-conventions:
-	0 means success
-	indent with tabs
-sockets:
-	avoid repetition (getaddrinfo, etc.)
-	comprehensive error messages (file, syscall)
-maybe hashtable for HTTP headers:
-	http://troydhanson.github.io/uthash/
-	optional support in CMake (option)
-	credits!
+curl/Python unit tests
+handle large data blocks
+loop detection string (md5?)
+caching
+simple scripting
+tunnel
+fix cookies issues
 scripted Lua Web interface:
 	API for easy settings management
 	ugly but usable samples (default)
