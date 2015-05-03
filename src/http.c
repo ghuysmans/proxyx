@@ -10,6 +10,7 @@
 /**
  * Fetches data using HTTP.
  * @return 1 on error
+ * @return 2 if the connection was closed
  */
 int fetch_http(const int sockfd /**<socket to read the data from*/,
 		BUFFER **b /**<buffer pointer*/,
@@ -30,7 +31,7 @@ nope:
 			free(*start_line);
 			*start_line = NULL;
 		}
-		return 1;
+		return sll ? 1 : 2;
 	}
 	else {
 		char *rh; //raw headers

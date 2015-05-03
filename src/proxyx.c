@@ -89,8 +89,11 @@ void handle_client(int sock, struct sockaddr_in *sa, socklen_t sal) {
 	//process each request
 	do {
 		if (e = fetch_http(sock, &b, CHUNK, &sl, &h, &d, &dl, &r, 0)) {
-			fprintf(stderr, "%s: bad request (headers?)\n", addr);
-			write(sock, BADREQ, strlen(BADREQ));
+			if (e == 1) {
+				fprintf(stderr, "%s: bad request (headers?)\n", addr);
+				write(sock, BADREQ, strlen(BADREQ));
+			}
+			//else, the client has closed the connection.
 		}
 		else {
 			char *host = find_http_header(h, "Host");
