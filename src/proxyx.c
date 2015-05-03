@@ -22,13 +22,58 @@
 	"Connection: close\r\n\r\n" \
 	"Bad Gateway"
 
-#define STUPID "\r\nConnection: close\r\n\r\n"
+/**
+ * Transmits a response from a remote server
+ */
+void transmit_response(char *addr, char *sl2, int sock, HTTP_HEADER *h2, char *d2, size_t dl2) {
+	fprintf(stderr, "%s < %s\n", addr, sl2);
+	write(sock, sl2, strlen(sl2));
+	write(sock, "\r\n", 2);
+	send_http_headers(sock, h2);
+	write(sock, "\r\n", 2);
+	write(sock, d2, dl2);
+	//FIXME remaining
+}
 
-#define STUPID2 "\r\nHost: localhost\r\nConnection: close\r\n\r\n"
+/**
+ * Makes a request to a remote server.
+ */
+void make_request(char *addr, int *last_socket, char **last_host, char *host, char *rh, char *rs, BUFFER **b2, int sock, char *sl, HTTP_HEADER *h, char *d, size_t dl) {
+	if (!*last_host || strcmp(*last_host, host)) {
+		*last_socket = get_tcp_socket(rh, rs, 0, NULL);
+		if (*last_socket == -1) {
+			fprintf(stderr, "%s: unreachable %s\n", addr, host);
+			write(sock, BADGW, strlen(BADGW));
+			return;
+		}
+		else
+			*last_host = strdup(host);
+	}
+	char *sl2;
+	HTTP_HEADER *h2;
+	char *d2;
+	size_t dl2, r2;
+	write(*last_socket, sl, strlen(sl));
+	write(*last_socket, "\r\n", 2);
+	send_http_headers(*last_socket, h);
+	write(*last_socket, "\r\n", 2);
+	write(*last_socket, d, dl);
+	//FIXME remaining
+	if (fetch_http(*last_socket, b2, CHUNK, &sl2, &h2, &d2, &dl2, &r2, 1)) {
+		fprintf(stderr, "%s: out fetch_http.\n", addr);
+		write(sock, BADGW, strlen(BADGW));
+	}
+	else
+		transmit_response(addr, sl2, sock, h2, d2, dl2);
+}
 
 void handle_client(int sock, struct sockaddr_in *sa, socklen_t sal) {
 	char addr[INET6_ADDRSTRLEN+6] = {0};
-	BUFFER *b = NULL;
+	BUFFER *b=NULL, *b2=NULL;
+	int e; //end loop flag
+	int last_socket = -1; //used if keep-alive was chosen
+	char *last_host = NULL;
+	//request parts
 	char *sl;
 	HTTP_HEADER *h;
 	char *d;
@@ -41,63 +86,50 @@ void handle_client(int sock, struct sockaddr_in *sa, socklen_t sal) {
 	else
 		strcpy(addr, "DEBUG");
 	fprintf(stderr, "%s: accepted.\n", addr);
-	//real work
-	if (fetch_http(sock, &b, CHUNK, &sl, &h, &d, &dl, &r, 0))
-		fprintf(stderr, "%s: oops.\n", addr);
-	else {
-		char *host = find_http_header(h, "Host");
-		fprintf(stderr, "%s > %s\n", addr, sl);
-		if (host) {
-			//FIXME free objects
-			char *hc = strdup(host);
-			char *rh, *rs;
-			int rem;
-			if (hc) {
-				get_host_parts(hc, &rh, &rs);
-				rem = get_tcp_socket(rh, rs, 0, NULL);
-				if (rem == -1) {
-					fprintf(stderr, "%s: out get_tcp_socket.\n", addr);
-					write(sock, BADGW, strlen(BADGW));
-				}
-				else {
-					BUFFER *b2 = NULL;
-					char *sl2;
-					HTTP_HEADER *h2;
-					char *d2;
-					size_t dl2, r2;
-					write(rem, sl, strlen(sl));
-					write(rem, "\r\n", 2);
-					send_http_headers(rem, h);
-					write(rem, "\r\n", 2);
-					write(rem, d, dl);
-					//FIXME remaining
-					if (fetch_http(rem, &b2, CHUNK, &sl2, &h2, &d2, &dl2, &r2, 1)) {
-						fprintf(stderr, "%s: out fetch_http.\n", addr);
-						write(sock, BADGW, strlen(BADGW));
-					}
-					else {
-						fprintf(stderr, "%s < %s\n", addr, sl2);
-						write(sock, sl2, strlen(sl2));
-						write(sock, "\r\n", 2);
-						send_http_headers(sock, h2);
-						write(sock, "\r\n", 2);
-						write(sock, d2, dl2);
-						//FIXME remaining
-					}
-					close(rem);
-				}
-				free(hc);
-			}
-			else {
-				perror("strdup");
-				write(sock, BADGW, strlen(BADGW));
-			}
-		}
-		else {
-			fprintf(stderr, "%s: in Host.\n", addr);
+	//process each request
+	do {
+		if (e = fetch_http(sock, &b, CHUNK, &sl, &h, &d, &dl, &r, 0)) {
+			fprintf(stderr, "%s: bad request (headers?)\n", addr);
 			write(sock, BADREQ, strlen(BADREQ));
 		}
-	}
+		else {
+			char *host = find_http_header(h, "Host");
+			char *connection = find_http_header(h, "Connection");
+			fprintf(stderr, "%s > %s\n", addr, sl);
+			if (host) {
+				char *hc = strdup(host);
+				char *rh, *rs;
+				int rem;
+				if (hc) {
+					get_host_parts(hc, &rh, &rs);
+					make_request(addr, &last_socket, &last_host, host, rh, rs, &b2, sock, sl, h, d, dl);
+					free(hc);
+				}
+				else {
+					perror("strdup");
+					write(sock, BADGW, strlen(BADGW));
+				}
+			}
+			else {
+				fprintf(stderr, "%s: bad request Host\n", addr);
+				write(sock, BADREQ, strlen(BADREQ));
+			}
+			if (connection && strcmp(connection, "close"))
+				e = 1;
+		}
+		if (h)
+			free_http_headers(h);
+		if (d)
+			free(d);
+	} while (!e);
+	if (b)
+		free(b);
+	if (b2)
+		free(b2);
+	if (last_host)
+		free(last_host);
+	if (last_socket != -1)
+		close(last_socket);
 	close(sock);
 	fprintf(stderr, "%s: closed.\n", addr);
 }
