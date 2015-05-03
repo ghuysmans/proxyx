@@ -114,7 +114,7 @@ void handle_client(int sock, struct sockaddr_in *sa, socklen_t sal) {
 				fprintf(stderr, "%s: bad request Host\n", addr);
 				write(sock, BADREQ, strlen(BADREQ));
 			}
-			if (connection && strcmp(connection, "close"))
+			if (connection && !strcmp(connection, "close"))
 				e = 1;
 		}
 		if (h)
