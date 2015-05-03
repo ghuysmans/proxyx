@@ -2,7 +2,8 @@
  * @file
  * RFC 2616 headers encoding/decoding library
  */
-#include "../include/http_headers.h"
+#define _XOPEN_SOURCE
+#include "http_headers.h"
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
@@ -153,45 +154,37 @@ char* asctimeformat="%a %b %d %H:%M:%S %Y";
 
 /**
  * Reads a date complying with either RFC 1123, RFC 850 or asctime's format.
- * @return 0 if successfull
+ * @return 0 if successful
  */
 int from_http_date(const char *raw /**<raw date string*/,
-		struct tm *d /**<decoded date*/){
-	//trying everything
-	int res;
-	malloc(sizeof(res));
-	res = strptime(raw, rfc850, d);//RFC850?
-        if (res == NULL){
-		res = strptime(raw, rfc1123, d);//RFC1123?
-		if (res == NULL){
-			res = strptime(raw, asctimeformat, d);//ASCTIME?
-			if (res == NULL){
-				free(res);
-				return -1;//Error : Wrong date format
-			}
+		struct tm *d /**<decoded date*/) {
+	char *res = strptime(raw, rfc850, d); //RFC850?
+	if (!res) {
+		res = strptime(raw, rfc1123, d); //RFC1123?
+		if (!res) {
+			res = strptime(raw, asctimeformat, d); //ASCTIME?
+			if (!res)
+				return 1; //wrong date format
 		}
 	}
 	return 0;
 }
-	
 
 /**
  * Converts a date to the preferred HTTP date format (RFC 1123).
  * @return NULL if memory couldn't be allocated
  */
 char *to_http_date(const struct tm *d){
+	//FIXME can we really use this?
 	static char converted[64];
-	int res = strftime(converted, 64, rfc1123, d);
-	if (res == NULL){
-		return NULL; 
-	}
+	if (strftime(converted, 64, rfc1123, d))
 		return converted;
+	else
+		return NULL;
 }
 
 
 //use gmtime(), mktime()
-
-/* FIXME find doc */
 
 /**
  * Extracts the host and service from the HTTP Host header field.
