@@ -42,43 +42,55 @@ void handle_client(int sock, struct sockaddr_in *sa, socklen_t sal) {
 		strcpy(addr, "DEBUG");
 	fprintf(stderr, "%s: accepted.\n", addr);
 	//real work
-	//FIXME read everything
 	if (fetch_http(sock, &b, CHUNK, &sl, &h, &d, &dl, &r, 0))
 		fprintf(stderr, "%s: oops.\n", addr);
 	else {
 		char *host = find_http_header(h, "Host");
-		host = "localhost"; //FIXME
+		fprintf(stderr, "%s > %s\n", addr, sl);
 		if (host) {
-			//FIXME call the split function
 			//FIXME free objects
-			int rem = get_tcp_socket(host, "http", 0, NULL);
-			if (rem == -1) {
-				fprintf(stderr, "%s: out get_tcp_socket.\n", addr);
-				write(sock, BADGW, strlen(BADGW));
-			}
-			else {
-				BUFFER *b2 = NULL;
-				char *sl2;
-				HTTP_HEADER *h2;
-				char *d2;
-				size_t dl2, r2;
-				write(rem, sl, strlen(sl));
-				write(rem, STUPID2, strlen(STUPID2));
-				if (fetch_http(rem, &b2, CHUNK, &sl2, &h2, &d2, &dl2, &r2, 1)) {
-					fprintf(stderr, "%s: out fetch_http.\n", addr);
+			char *hc = strdup(host);
+			char *rh, *rs;
+			int rem;
+			if (hc) {
+				get_host_parts(hc, &rh, &rs);
+				rem = get_tcp_socket(rh, rs, 0, NULL);
+				if (rem == -1) {
+					fprintf(stderr, "%s: out get_tcp_socket.\n", addr);
 					write(sock, BADGW, strlen(BADGW));
 				}
 				else {
-					fprintf(stderr, "%s: out yay.\n", addr);
-					fprintf(stderr, "%s: data len %d\n", addr, dl2);
-					fprintf(stderr, "%s: remaining %d\n", addr, r2);
-					write(sock, sl2, strlen(sl2));
-					write(sock, STUPID, strlen(STUPID));
-					//FIXME headers
-					write(sock, d2, dl2);
+					BUFFER *b2 = NULL;
+					char *sl2;
+					HTTP_HEADER *h2;
+					char *d2;
+					size_t dl2, r2;
+					write(rem, sl, strlen(sl));
+					write(rem, "\r\n", 2);
+					send_http_headers(rem, h);
+					write(rem, "\r\n", 2);
+					write(rem, d, dl);
 					//FIXME remaining
+					if (fetch_http(rem, &b2, CHUNK, &sl2, &h2, &d2, &dl2, &r2, 1)) {
+						fprintf(stderr, "%s: out fetch_http.\n", addr);
+						write(sock, BADGW, strlen(BADGW));
+					}
+					else {
+						fprintf(stderr, "%s < %s\n", addr, sl2);
+						write(sock, sl2, strlen(sl2));
+						write(sock, "\r\n", 2);
+						send_http_headers(sock, h2);
+						write(sock, "\r\n", 2);
+						write(sock, d2, dl2);
+						//FIXME remaining
+					}
+					close(rem);
 				}
-				close(rem);
+				free(hc);
+			}
+			else {
+				perror("strdup");
+				write(sock, BADGW, strlen(BADGW));
 			}
 		}
 		else {
