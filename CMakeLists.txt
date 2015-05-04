@@ -45,5 +45,4 @@ endif(DOXYGEN_FOUND)
 include(tests/tests.cmake)
 
 add_executable(luatest poc/luatest.c)
-add_executable(md5test poc/md5test.c)
 add_executable(proxyx src/proxyx.c src/http_headers.c src/http.c src/buffer.c src/socket.c)
