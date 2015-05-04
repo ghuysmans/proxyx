@@ -16,6 +16,7 @@
 #include <signal.h>
 
 #define CHUNK 1024*1024
+#define HTTP_OK "HTTP/1.1 2"
 
 #define BADREQ "HTTP/1.1 400 Bad Request\r\n" \
 	"Connection: close\r\n\r\n" \
@@ -43,28 +44,60 @@ void transmit_response(char *addr, char *sl2, int sock, HTTP_HEADER *h2, char *d
  * FIXME not exactly that, should be rephrased.
  */
 void make_request(char *addr, int *last_socket, char **last_host, char *host, char *rh, char *rs, BUFFER **b2, int sock, char *sl, HTTP_HEADER *h, char *d, size_t dl) {
-	char generic[CACHE_FILENAME_LENGTH];
-	char precise[CACHE_FILENAME_LENGTH];
+	char generic[CACHE_FILENAME_LENGTH] = {0};
+	char precise[CACHE_FILENAME_LENGTH] = {0};
 	char *sl2;
 	HTTP_HEADER *h2;
 	char *d2;
 	size_t dl2, r2;
 	int f;
 	cache_generic(generic, sl);
-	if ((f = open(generic, O_RDONLY)) != -1) {
+	if (generic[0] && (f = open(generic, O_RDONLY))!=-1) {
+		//the request is cachable and we got a generic cached response
 		if (fetch_http(f, b2, CHUNK, &sl2, &h2, &d2, &dl2, &r2, 1)) {
-			fprintf(stderr, "%s: cache fetch_http.\n", addr);
-			write(sock, BADGW, strlen(BADGW));
+			fprintf(stderr, "%s: cache_generic fetch_http.\n", addr);
 			close(f);
 		}
 		else {
-			//FIXME conditions!!
-			fprintf(stderr, "%s: cache hit\n", addr);
-			transmit_response(addr, sl2, sock, h2, d2, dl2);
-			close(f);
-			return;
+			int f2;
+			cache_precise(precise, sl, h, h2);
+			if (precise[0] && (f2 = open(precise, O_RDONLY))!=-1) {
+				//there's an exact match
+				//first, discard the generic one
+				if (d2)
+					free(d2);
+				if (h2)
+					free_http_headers(h2);
+				close(f);
+				if (fetch_http(f2, b2, CHUNK, &sl2, &h2, &d2, &dl2, &r2, 1)) {
+					fprintf(stderr, "%s: cache_precise fetch_http.\n", addr);
+					close(f2);
+				}
+				else {
+					//FIXME date
+					fprintf(stderr, "%s: cache_precise hit\n", addr);
+					transmit_response(addr, sl2, sock, h2, d2, dl2);
+					//FIXME remaining
+					close(f2);
+					return;
+				}
+			}
+			else {
+				//FIXME date
+				fprintf(stderr, "%s: cache_generic hit\n", addr);
+				transmit_response(addr, sl2, sock, h2, d2, dl2);
+				//FIXME remaining
+				if (d2)
+					free(d2);
+				if (h2)
+					free_http_headers(h2);
+				close(f);
+				return;
+			}
 		}
 	}
+	else
+		fprintf(stderr, "%s: cache miss\n", addr);
 	if (!*last_host || strcmp(*last_host, host)) {
 		*last_socket = get_tcp_socket(rh, rs, 0, NULL);
 		if (*last_socket == -1) {
@@ -87,7 +120,8 @@ void make_request(char *addr, int *last_socket, char **last_host, char *host, ch
 	}
 	else {
 		fprintf(stderr, "%s: generic=%s, precise=%s\n", addr, generic, precise);
-		cache_write(generic, precise, sl2, h2, d2, dl2);
+		if (!strncmp(sl2, HTTP_OK, strlen(HTTP_OK)))
+			cache_write(generic, precise, sl2, h2, d2, dl2);
 		transmit_response(addr, sl2, sock, h2, d2, dl2);
 	}
 }

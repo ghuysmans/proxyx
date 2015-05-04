@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define GET_METHOD "GET "
+
 /**
  * Writes data to the cache if headers allow it.
  */
@@ -27,6 +29,7 @@ void cache_write(const char *generic /**<hash*/,
 		send_http_headers(fd, h2);
 		write(fd, "\r\n", 2);
 		write(fd, d2, dl2);
+		//FIXME remaining
 		close(fd);
 		if (precise)
 			//create a generic link if it doesn't already exist
@@ -36,17 +39,22 @@ void cache_write(const char *generic /**<hash*/,
 
 /**
  * Computes a generic filename based on a start line.
+ * @note Only GET requests have one (because others can't be cached).
  */
 void cache_generic(char *dest /**<pre-allocated buffer*/,
 		const char *sl /**<start line*/) {
-	unsigned char hash[MD5_DIGEST_LENGTH];
-	int i;
-	MD5_CTX ctx;
-	MD5_Init(&ctx);
-	MD5_Update(&ctx, sl, strlen(sl));
-	MD5_Final(hash, &ctx);
-	for (i=0; i<MD5_DIGEST_LENGTH; i++)
-		snprintf(dest+(i<<1), 3, "%02x", hash[i]);
+	if (strncmp(sl, GET_METHOD, strlen(GET_METHOD)))
+		*dest = 0;
+	else {
+		unsigned char hash[MD5_DIGEST_LENGTH];
+		int i;
+		MD5_CTX ctx;
+		MD5_Init(&ctx);
+		MD5_Update(&ctx, sl, strlen(sl));
+		MD5_Final(hash, &ctx);
+		for (i=0; i<MD5_DIGEST_LENGTH; i++)
+			snprintf(dest+(i<<1), 3, "%02x", hash[i]);
+	}
 }
 
 /**
