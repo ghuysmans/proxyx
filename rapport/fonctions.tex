@@ -1,0 +1,25 @@
+\section{Fonctionnalités}
+\subsection{Lancement}
+Le proxy HTTP peut être démarré indépendamment d'un IDE. Nous avons décidé de ne pas implémenter un client HTTP. Il était selon nous plus efficace de rendre notre travail compatible avec les clients existants. Notre proxy a été testé avec Firefox 37. 
+
+\subsection{Redémarrage}
+Les informations en cache sont conservées lors d'un redémarrage (elles sont stockées sous forme de fichiers).
+
+\subsection{Protocole}
+Le proxy supporte HTTP 1.1 et l'IPv6.
+
+\subsection{Connexions multiples}
+\subsubsection{proxyx.c}
+Une boucle dans main() crée un fork pour chaque client.
+
+\subsection{Persistance}
+La connexion TCP reste bien ouverte après avoir envoyé la réponse au client.
+\subsubsection{proxyx.c}
+Dans make\_request(), le socket n'est pas fermé après l'appel de transmit\_response(), une méthode envoyant la réponse au client.
+
+\subsection{Pipelining}
+Un élément clé de notre implémentation du pipelining est la gestion des buffers.
+\subsubsection{buffer.c}
+read\_buffered() lit les données d'un buffer créé par read\_until et puis d'un descripteur de fichiers UNIX. read\_until recherche une chaîne de caractère dans un buffer, et désalloue de la mémoire le buffer quand il n'est plus utile.
+\subsubsection{proxyx.c}
+Dans handle\_client(), une boucle ne ferme la connexion que lorsque l'on reçoit un message "Connection: close" ou si la connexion est fermée de l'autre côté.

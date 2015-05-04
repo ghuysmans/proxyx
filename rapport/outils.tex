@@ -1,0 +1,25 @@
+\section{Outils}
+\subsection{Dépendances}
+\begin{itemize}
+\item Les bibliothèques OpenSSL et Lua;
+\item Un compilateur C++ car CMake en a besoin.
+\end{itemize}
+
+\subsection{Documentation}
+Nous avons utilisé Doxygen pour gérer la documentation de nos fonctions. Elle est accessible par \texttt{doc/html/index.html} une fois la commande "\texttt{make doc}" effectuée.
+
+\subsection{Tests unitaires}
+Nous utilisons CuTest pour tester nos fonctions. Ils sont regroupés et exécutés automatiquement lorsque la commande "\texttt{make test}" est utilisée.
+
+\subsection{CMake}
+CMake génère un makefile et vérifie la configuration du système.
+
+\subsection{Mozilla Firefox 37.2}
+Nous avons créé des profils différents et un script qui ouvre le profil de test.
+\subsubsection{Création d'un profil}
+Lancez Firefox via la commande "\texttt{firefox -new-instance -P}". Cela ouvrira le gestionnaire de profils. Cliquez sur "\texttt{Create profile}", nommez-le et lancez Firefox avec.
+\subsubsection{Configuration de Firefox}
+Dans "Menu","Préférences","Avancé", naviguez dans l'onglet "Réseau" puis cliquez sur "Paramètres". Sélectionnez ensuite "Configuration manuelle du proxy". Dans "Proxy HTTP", entrez localhost et dans "Port" 8080.
+
+\subsection{Testé sous Ubuntu et Debian}
+Devrait fonctionner sous tout système UNIX avec sockets.
