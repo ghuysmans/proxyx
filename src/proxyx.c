@@ -1,12 +1,15 @@
 #include "socket.h"
 #include "http_headers.h"
 #include "http.h"
+#include "cache.h"
 #include <unistd.h>
 #include <string.h>
 #include <error.h>
 #include <errno.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/socket.h>
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,9 +39,32 @@ void transmit_response(char *addr, char *sl2, int sock, HTTP_HEADER *h2, char *d
 }
 
 /**
- * Makes a request to a remote server.
+ * Makes a request to a remote server and forwards it to the client.
+ * FIXME not exactly that, should be rephrased.
  */
 void make_request(char *addr, int *last_socket, char **last_host, char *host, char *rh, char *rs, BUFFER **b2, int sock, char *sl, HTTP_HEADER *h, char *d, size_t dl) {
+	char generic[CACHE_FILENAME_LENGTH];
+	char precise[CACHE_FILENAME_LENGTH];
+	char *sl2;
+	HTTP_HEADER *h2;
+	char *d2;
+	size_t dl2, r2;
+	int f;
+	cache_generic(generic, sl);
+	if ((f = open(generic, O_RDONLY)) != -1) {
+		if (fetch_http(f, b2, CHUNK, &sl2, &h2, &d2, &dl2, &r2, 1)) {
+			fprintf(stderr, "%s: cache fetch_http.\n", addr);
+			write(sock, BADGW, strlen(BADGW));
+			close(f);
+		}
+		else {
+			//FIXME conditions!!
+			fprintf(stderr, "%s: cache hit\n", addr);
+			transmit_response(addr, sl2, sock, h2, d2, dl2);
+			close(f);
+			return;
+		}
+	}
 	if (!*last_host || strcmp(*last_host, host)) {
 		*last_socket = get_tcp_socket(rh, rs, 0, NULL);
 		if (*last_socket == -1) {
@@ -49,10 +75,6 @@ void make_request(char *addr, int *last_socket, char **last_host, char *host, ch
 		else
 			*last_host = strdup(host);
 	}
-	char *sl2;
-	HTTP_HEADER *h2;
-	char *d2;
-	size_t dl2, r2;
 	write(*last_socket, sl, strlen(sl));
 	write(*last_socket, "\r\n", 2);
 	send_http_headers(*last_socket, h);
@@ -63,8 +85,11 @@ void make_request(char *addr, int *last_socket, char **last_host, char *host, ch
 		fprintf(stderr, "%s: out fetch_http.\n", addr);
 		write(sock, BADGW, strlen(BADGW));
 	}
-	else
+	else {
+		fprintf(stderr, "%s: generic=%s, precise=%s\n", addr, generic, precise);
+		cache_write(generic, precise, sl2, h2, d2, dl2);
 		transmit_response(addr, sl2, sock, h2, d2, dl2);
+	}
 }
 
 void handle_client(int sock, struct sockaddr_in *sa, socklen_t sal) {
