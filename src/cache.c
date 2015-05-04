@@ -1,3 +1,7 @@
+/**
+ * @file
+ * Cache management functions
+ */
 #include "cache.h"
 #include <openssl/md5.h>
 #include <sys/types.h>

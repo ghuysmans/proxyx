@@ -1,3 +1,7 @@
+/**
+ * @file
+ * Main program
+ */
 #include "socket.h"
 #include "http_headers.h"
 #include "http.h"
