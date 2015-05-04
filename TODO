@@ -1,10 +1,8 @@
-curl/Python unit tests
-handle large data blocks
 loop detection string (md5?)
-caching
 simple scripting
 tunnel
 fix cookies issues
+handle chunks
 scripted Lua Web interface:
 	API for easy settings management
 	ugly but usable samples (default)
