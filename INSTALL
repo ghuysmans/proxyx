@@ -1,0 +1,6 @@
+sudo apt-get install libssl-dev
+sudo apt-get install doxygen
+sudo apt-get install liblua5.2-dev
+sudo apt-get install g++
+cmake .
+make
