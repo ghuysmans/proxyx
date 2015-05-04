@@ -73,21 +73,22 @@ void make_request(char *addr, int *last_socket, char **last_host, char *host, ch
 				if (h2)
 					free_http_headers(h2);
 				close(f);
-				if (fetch_http(f2, b2, CHUNK, &sl2, &h2, &d2, &dl2, &r2, 1)) {
+				if (fetch_http(f2, b2, CHUNK, &sl2, &h2, &d2, &dl2, &r2, 1))
 					fprintf(stderr, "%s: cache_precise fetch_http.\n", addr);
-					close(f2);
-				}
+				else if (expired(h2))
+					unlink(precise);
 				else {
-					//FIXME date
 					fprintf(stderr, "%s: cache_precise hit\n", addr);
 					transmit_response(addr, sl2, sock, h2, d2, dl2);
 					//FIXME remaining
 					close(f2);
 					return;
 				}
+				close(f2);
 			}
+			else if (expired(h))
+				; //we still need it to find the precise one!
 			else {
-				//FIXME date
 				fprintf(stderr, "%s: cache_generic hit\n", addr);
 				transmit_response(addr, sl2, sock, h2, d2, dl2);
 				//FIXME remaining

@@ -10,8 +10,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define GET_METHOD "GET "
+
+/**
+ * Determines whether the Expires field is in the past.
+ * @return 2 on error
+ */
+int expired(const HTTP_HEADER *h) {
+	char *e = find_http_header(h, "Expires");
+	struct tm tm;
+	if (e && !from_http_date(e, &tm)) {
+		time_t tt = mktime(&tm);
+		return time(NULL) >= tt;
+	}
+	else
+		return 2;
+}
 
 /**
  * Writes data to the cache if headers allow it.
@@ -22,22 +38,32 @@ void cache_write(const char *generic /**<hash*/,
 		const HTTP_HEADER *h2 /**<client's first header*/,
 		const char *d2 /**client's data*/,
 		const size_t dl2 /**client's data length*/) {
-	int fd;
 	//FIXME conditions
-	fd = creat(*precise ? precise : generic, S_IRUSR);
-	if (fd == -1)
-		perror("creat");
-	else {
-		write(fd, sl2, strlen(sl2));
-		write(fd, "\r\n", 2);
-		send_http_headers(fd, h2);
-		write(fd, "\r\n", 2);
-		write(fd, d2, dl2);
-		//FIXME remaining
-		close(fd);
-		if (precise)
-			//create a generic link if it doesn't already exist
-			link(precise, generic);
+	if (*precise || *generic) {
+		char *cc = find_http_header(h2, "Cache-Control");
+		char *p = find_http_header(h2, "Pragma");
+		if (cc && (strstr(cc, "private") || strstr(cc, "must-revalidate") ||
+				strstr(cc, "no-cache") || strstr(cc, "no-store")) ||
+				p && !strcmp(p, "no-cache"))
+			;
+		else {
+			int fd;
+			fd = creat(*precise ? precise : generic, S_IRUSR);
+			if (fd == -1)
+				perror("creat");
+			else {
+				write(fd, sl2, strlen(sl2));
+				write(fd, "\r\n", 2);
+				send_http_headers(fd, h2);
+				write(fd, "\r\n", 2);
+				write(fd, d2, dl2);
+				//FIXME remaining
+				close(fd);
+				if (precise)
+					//create a generic link if it doesn't already exist
+					link(precise, generic);
+			}
+		}
 	}
 }
 
